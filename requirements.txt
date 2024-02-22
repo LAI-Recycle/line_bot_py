@@ -2,4 +2,5 @@ line-bot-sdk
 flask
 requests
 twstock
+lxml
 gunicorn
