@@ -1,33 +1,25 @@
+#app.py
 from flask import Flask, request, abort
+from dotenv import load_dotenv
 import os
 
-from linebot.v3 import (
-    WebhookHandler
+# 載入 .env 文件
+load_dotenv()
+
+from linebot import (
+    LineBotApi, WebhookHandler
 )
-from linebot.v3.exceptions import (
+from linebot.exceptions import (
     InvalidSignatureError
 )
-from linebot.v3.messaging import (
-    Configuration,
-    ApiClient,
-    MessagingApi,
-    ReplyMessageRequest,
-    TextMessage
-)
-from linebot.v3.webhooks import (
-    MessageEvent,
-    TextMessageContent
+from linebot.models import (
+    MessageEvent, TextMessage, TextSendMessage,
 )
 
 app = Flask(__name__)
 
-app = Flask(__name__)
-static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
-# Channel Access Token
-configuration = Configuration(os.getenv('CHANNEL_ACCESS_TOKEN'))
-# Channel Secret
+line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
-
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -42,23 +34,17 @@ def callback():
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
 
     return 'OK'
 
 
-@handler.add(MessageEvent, message=TextMessageContent)
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    with ApiClient(configuration) as api_client:
-        line_bot_api = MessagingApi(api_client)
-        line_bot_api.reply_message_with_http_info(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
-            )
-        )
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=event.message.text))
+
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
