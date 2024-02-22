@@ -1,7 +1,9 @@
 #app.py
 import os
 import random 
+import twstock
 
+from datetime import datetime
 from flask import Flask, request, abort
 
 #載入.env
@@ -49,9 +51,43 @@ def handle_message(event):
     if "運勢" in event.message.text:
         fortune = random.choice(['大凶', '凶', '末吉', '吉','中吉','大吉'])
         msg.append(TextSendMessage(text=fortune))
-    if "吃什麼" in event.message.text:
+    elif "吃什麼" in event.message.text:
         eat = random.choice(['水餃', '小7', '火鍋', '炒飯','拉麵','陽春麵'])
         msg.append(TextSendMessage(text=eat)) 
+    #股票
+    #https://github.com/maloyang/stock-line-bot/blob/master/line_stock_tutorial%20-%20Copy2git/app.py
+    elif(text.startswith('#')):
+            text = text[1:]
+            content = ''
+
+            stock_rt = twstock.realtime.get(text)
+            my_datetime = datetime.fromtimestamp(stock_rt['timestamp']+8*60*60)
+            my_time = my_datetime.strftime('%H:%M:%S')
+
+            content += '%s (%s) %s\n' %(
+                stock_rt['info']['name'],
+                stock_rt['info']['code'],
+                my_time)
+            content += '現價: %s / 開盤: %s\n'%(
+                stock_rt['realtime']['latest_trade_price'],
+                stock_rt['realtime']['open'])
+            content += '最高: %s / 最低: %s\n' %(
+                stock_rt['realtime']['high'],
+                stock_rt['realtime']['low'])
+            content += '量: %s\n' %(stock_rt['realtime']['accumulate_trade_volume'])
+
+            stock = twstock.Stock(text)#twstock.Stock('2330')
+            content += '-----\n'
+            content += '最近五日價格: \n'
+            price5 = stock.price[-5:][::-1]
+            date5 = stock.date[-5:][::-1]
+            for i in range(len(price5)):
+                #content += '[%s] %s\n' %(date5[i].strftime("%Y-%m-%d %H:%M:%S"), price5[i])
+                content += '[%s] %s\n' %(date5[i].strftime("%Y-%m-%d"), price5[i])
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=content)
+            )
     line_bot_api.reply_message(event.reply_token, messages=msg[:2])
 
 
