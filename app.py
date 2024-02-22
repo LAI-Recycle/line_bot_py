@@ -1,10 +1,10 @@
 #app.py
 from flask import Flask, request, abort
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os
 
 # 載入 .env 文件
-load_dotenv()
+#load_dotenv()
 
 from linebot import (
     LineBotApi, WebhookHandler
