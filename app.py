@@ -47,11 +47,12 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    text=event.message.text
     msg = []
-    if "運勢" in event.message.text:
+    if "運勢" in text:
         fortune = random.choice(['大凶', '凶', '末吉', '吉','中吉','大吉'])
         msg.append(TextSendMessage(text=fortune))
-    elif "吃什麼" in event.message.text:
+    elif "吃什麼" in text:
         eat = random.choice(['水餃', '小7', '火鍋', '炒飯','拉麵','陽春麵'])
         msg.append(TextSendMessage(text=eat)) 
     #股票
