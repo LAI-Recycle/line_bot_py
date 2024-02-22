@@ -49,11 +49,18 @@ def callback():
 def handle_message(event):
     text=event.message.text
     msg = []
-    if "運勢" in text:
-        fortune = random.choice(['大凶', '凶', '末吉', '吉','中吉','大吉'])
-        msg.append(TextSendMessage(text=fortune))
-    elif "吃什麼" in text:
-        eat = random.choice(['水餃', '小7', '火鍋', '炒飯','拉麵','陽春麵'])
+    if "晚餐" in text:
+        eat = random.choice([
+                '越玖玖美食館',
+                '便利商店',
+                '便當店',
+                '土魠魚羹',
+                '義麵屋',
+                '牛肉麵',
+                '便當店',
+                '泰式',
+                '找新店'
+                ])
         msg.append(TextSendMessage(text=eat)) 
     #股票
     #https://github.com/maloyang/stock-line-bot/blob/master/line_stock_tutorial%20-%20Copy2git/app.py
@@ -61,7 +68,9 @@ def handle_message(event):
             text = text[1:]
             content = ''
 
+            # 查詢上市股票之即時資料
             stock_rt = twstock.realtime.get(text)
+            #時間轉換
             my_datetime = datetime.fromtimestamp(stock_rt['timestamp']+8*60*60)
             my_time = my_datetime.strftime('%H:%M:%S')
 
@@ -85,6 +94,7 @@ def handle_message(event):
             for i in range(len(price5)):
                 #content += '[%s] %s\n' %(date5[i].strftime("%Y-%m-%d %H:%M:%S"), price5[i])
                 content += '[%s] %s\n' %(date5[i].strftime("%Y-%m-%d"), price5[i])
+            
             line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=content)
